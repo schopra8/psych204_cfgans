@@ -1,0 +1,40 @@
+// ------------------------------------------------------------------------------------------------
+// Author: Sahil Chopra
+// Psych 204, Autumn 2017
+// Goal: Herewith, I forward sample a simple Bayesian Network inspred by Alison Gopnik's "blicket" 
+//       experiments. Imagine a world where you have three objects "A", "B" "C" which of different
+//       mass. Furthermore, we have a  fourth object "D" that is a light bulb. If the "A" and "C"
+//       both have weights that surpass a certain predefined threshold, then we find that light bulb
+//       "D" lights up. Otherwise "D" remains off. Furthermore, "B" has no actual effect on "D". 
+//       This Bayesian Network can be visualized as follows:
+//       
+//       A    B    C
+//        \       /
+//         \     /
+//          \   /
+//            D   
+// Note: run with "--require webppl-json"
+// ------------------------------------------------------------------------------------------------
+
+globalStore.d_threshold = 0.4
+
+var genSample = function(){
+    var A = sample(Uniform({a:0, b:1}))
+    var B = sample(Uniform({a:0, b:1}))
+    var C = sample(Uniform({a:0, b:1}))
+    var D =  (A >= globalStore.d_threshold  && C >= globalStore.d_threshold) ? 1 : 0
+    return {
+        "A": A,
+        "B": B,
+        "C": C,
+        "D": D,
+    }
+}
+
+var genSamples = function(){
+    var num_samples = 10000
+    var testData = repeat(num_samples, genSample) 
+    json.write('./data/blicket_test_40_p.json', testData)
+}
+
+genSamples()
