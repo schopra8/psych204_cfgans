@@ -1,1 +1,1 @@
-# psych204_cfgans
+# Counter Factual GANs Psych 204 Project
