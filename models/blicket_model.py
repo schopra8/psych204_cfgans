@@ -113,19 +113,21 @@ def train(num_epochs, save_epochs, data):
             d_optimizer.step() # Update Discriminator's params now that we've processed real and fake
 
             # Train Generator
-            G.zero_grad()
-            gaussian_sample = torch.FloatTensor(num_samples, g_input_size)
-            gaussian_sample.normal_()
-            gaussian_sample = Variable(gaussian_sample, requires_grad=False)
-            gen_outputs = G(gaussian_sample)
-            gen_outputs_decision = D(gen_outputs)
-            g_error = criterion(gen_outputs_decision, Variable(torch.ones(num_samples).type(torch.LongTensor)))
-            g_error.backward()
-            g_optimizer.step() # Update Generator's parameters
+            if epoch >= 10:
+                G.zero_grad()
+                gaussian_sample = torch.FloatTensor(num_samples, g_input_size)
+                gaussian_sample.normal_()
+                gaussian_sample = Variable(gaussian_sample, requires_grad=False)
+                gen_outputs = G(gaussian_sample)
+                gen_outputs_decision = D(gen_outputs)
+                g_error = criterion(gen_outputs_decision, Variable(torch.ones(num_samples).type(torch.LongTensor)))
+                g_error.backward()
+                g_optimizer.step() # Update Generator's parameters
         
             if i % 50 == 0:
                 print "Iteration {} of {} ---- Discriminator Loss: {}".format(i, len(data), np.mean([d_fake_error.data[0], d_real_error.data[0]]))
-                print "Iteration {} of {} ---- Generator Loss: {}".format(i, len(data), g_error.data[0])
+                if epoch >= 10:
+                    print "Iteration {} of {} ---- Generator Loss: {}".format(i, len(data), g_error.data[0])
 
         if epoch % save_epochs == 0:
             save_checkpoint({
