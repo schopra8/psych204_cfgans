@@ -32,7 +32,7 @@ var genSample = function(){
 }
 
 var genSamples = function(){
-    var num_samples = 10000
+    var num_samples = 100000
     var testData = repeat(num_samples, genSample) 
     json.write('./data/blicket_test_40_p.json', testData)
 }
