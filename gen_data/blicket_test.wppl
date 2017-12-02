@@ -16,7 +16,7 @@
 // Note: run with "--require webppl-json"
 // ------------------------------------------------------------------------------------------------
 
-globalStore.d_threshold = 0
+globalStore.d_threshold = 0.01
 
 var genSample = function(){
     var A = sample(Uniform({a:0, b:1}))

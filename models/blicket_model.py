@@ -12,6 +12,7 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
 
+import pprint
 import argparse
 import pickle
 import json
@@ -80,7 +81,7 @@ def train(num_epochs, num_discrim_batches_per_gen_batch, save_epochs, first_disc
 
     # Generator parameters
     g_input_size = 5
-    g_hidden_size = 10
+    g_hidden_size = 8
     g_output_size = 4
     G = Generator(input_size=g_input_size, hidden_size=g_hidden_size, output_size=g_output_size)
     if on_gpu():
@@ -207,6 +208,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--file', help='blicket data file path', default='../gen_data/data/blicket_test_0.4_p_100000.json' )
     parser.add_argument('--data_size', help='num training samples', default=100000)
+    parser.add_argument('--cut_off', help='cut off', default=0.4)
     args = parser.parse_args()
 
     blicket_data = parse_blicket_data(args.file)
@@ -229,19 +231,27 @@ if __name__ == '__main__':
     num_incorrect_with_small_b = 0
     num_incorrect_with_large_b = 0
 
-    def check_correct(result):
-        if result[0] >= 0.4 and result[2] >= 0.4 and result[3] >= 0.90:
+    def check_correct(result, cut_off, stats):
+        if result[0] >= cut_off and result[2] >= cut_off and result[3] >= 0.90:
+            stats['Correct_A_C_D'] += 1
             return True
-        elif result[0] <= 0.4 and result[3] <= 0.90:
+        elif result[0] <= cut_off and result[3] < 0.90:
+            stats['Correct_CF'] += 1
             return True
-
-        elif result[2] <= 0.4 and result[3] <= 0.90:
+        elif result[2] <= cut_off and result[3] < 0.90:
+            stats['Correct_CF'] += 1
             return True
         else:
-            return False
+            if result[0] >= cut_off and result[2] >= cut_off and result[3] <= 0.90:
+                stats['Incorrect_A_C_D'] += 1
+                return False
+            else
+                stats['Incorrect_CF'] += 1
+                return False
 
+    stats = {'Correct_A_C_D': 0, 'Correct_CF': 0, 'Incorrect_A_C_D': 0, 'Incorrect_CF': 0}
     for o in outputs:
-        if check_correct(o.data):
+        if check_correct(o.data, stats):
             num_correct += 1
             if o.data[1] <= 0.5:
                 num_correct_with_small_b += 1
@@ -263,6 +273,9 @@ if __name__ == '__main__':
     print "Num Correct with Large B: {}".format(num_correct_with_large_b)
     print "Num Incorrect with Small B: {}".format(num_incorrect_with_small_b)
     print "Num Incorrect wtih Large B: {}".format(num_incorrect_with_large_b)
+
+    pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(stats)
 
     with open('./losses/d_losses_{}.txt'.format(args.data_size), 'wb') as fp:
 	   pickle.dump(d_losses, fp)
