@@ -213,7 +213,7 @@ if __name__ == '__main__':
 
     blicket_data = parse_blicket_data(args.file)
     # num_epochs = 100
-    num_epochs = 2
+    num_epochs = 25
     first_discrim_epochs = 0
     num_discrim_batches_per_gen_batch = 2
     D, G, g_input_size, d_losses, g_losses = train(
