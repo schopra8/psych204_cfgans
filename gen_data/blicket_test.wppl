@@ -16,7 +16,7 @@
 // Note: run with "--require webppl-json"
 // ------------------------------------------------------------------------------------------------
 
-globalStore.d_threshold = 0.4
+globalStore.d_threshold = 0
 
 var genSample = function(){
     var A = sample(Uniform({a:0, b:1}))
@@ -31,11 +31,85 @@ var genSample = function(){
     }
 }
 
+var computeSummaryStats = function(num_samples, samples) {
+    var a_and_c_count = reduce(
+        function(x, acc) {
+            if (x['A'] >= globalStore.d_threshold && x['C'] >= globalStore.d_threshold) {
+                return acc + 1
+            } else {
+                return acc
+            }
+        },
+            0,
+            samples
+        );
+    var not_a_or_not_c_count = reduce(
+        function(x, acc) {
+            if (x['A'] < globalStore.d_threshold || x['C'] <= globalStore.d_threshold) {
+                return acc + 1
+            } else {
+                return acc
+            }
+        },
+            0,
+            samples
+        );
+
+    var a_count = reduce(
+        function(x, acc) {
+            if (x['A'] >= globalStore.d_threshold) {
+                return acc + 1
+            } else {
+                return acc
+            }
+        },
+            0,
+            samples
+        );
+
+    var c_count = reduce(
+        function(x, acc) {
+            if (x['C'] >= globalStore.d_threshold) {
+                return acc + 1
+            } else {
+                return acc
+            }
+        },
+            0,
+            samples
+        );
+
+    var d_count = reduce(
+        function(x, acc) {
+            if (x['D'] == 1.0) {
+                return acc + 1
+            } else {
+                return acc
+            }
+        },
+            0,
+            samples
+        );
+
+    var stats = {
+        'A_AND_C': a_and_c_count,
+        'NOT_A_OR_NOT_C': not_a_or_not_c_count,
+        'A': a_count ,
+        'NOT_A': num_samples - a_count,
+        'C': c_count,
+        'NOT_C': num_samples - c_count,
+        'D': d_count,
+        'NOT_D': num_samples - d_count,
+    }
+    console.log(stats)
+}
+
 var genSamples = function(){
-    var num_samples = 100000
+    var num_samples = 10000
     var testData = repeat(num_samples, genSample)
     var filename = './data/blicket_test_' + globalStore.d_threshold.toString() + '_p_' + num_samples.toString() + '.json' 
     json.write(filename, testData)
+    computeSummaryStats(num_samples, testData)
 }
 
 genSamples()
