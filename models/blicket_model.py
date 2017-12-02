@@ -12,6 +12,7 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
 
+import argparse
 import json
 import shutil
 from random import seed, shuffle
@@ -173,67 +174,67 @@ def produce_samples(G, g_input_size):
     return gen_outputs    
 
 if __name__ == '__main__':
-    blicket_data = parse_blicket_data('../gen_data/data/blicket_test_40_p.json')
-    num_epochs = 100
-    first_discrim_epochs = 0
-    num_discrim_batches_per_gen_batch = 2
-    D, G, g_input_size, d_losses, g_losses = train(
-        num_epochs=num_epochs,
-        num_discrim_batches_per_gen_batch=num_discrim_batches_per_gen_batch,
-        first_discrim_epochs=first_discrim_epochs,
-        save_epochs=10,
-        data=blicket_data)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--file', help='blicket data file path', default='../gen_data/data/blicket_test_0.4_p_100000.json' )
+    args = parser.parse_args()
+
+    # blicket_data = parse_blicket_data('../gen_data/data/blicket_test_40_p.json')
+    # num_epochs = 100
+    # first_discrim_epochs = 0
+    # num_discrim_batches_per_gen_batch = 2
+    # D, G, g_input_size, d_losses, g_losses = train(
+    #     num_epochs=num_epochs,
+    #     num_discrim_batches_per_gen_batch=num_discrim_batches_per_gen_batch,
+    #     first_discrim_epochs=first_discrim_epochs,
+    #     save_epochs=10,
+    #     data=blicket_data)
     
-    outputs = produce_samples(G, g_input_size)
-    num_correct = 0
-    num_incorrect = 0
-    num_correct_with_large_b = 0
-    num_correct_with_small_b = 0
-    num_incorrect_with_small_b = 0
-    num_incorrect_with_large_b = 0
+    # outputs = produce_samples(G, g_input_size)
+    # num_correct = 0
+    # num_incorrect = 0
+    # num_correct_with_large_b = 0
+    # num_correct_with_small_b = 0
+    # num_incorrect_with_small_b = 0
+    # num_incorrect_with_large_b = 0
 
-    def check_correct(result):
-        if result[0] >= 0.4 and result[2] >= 0.4 and result[3] >= 0.90:
-            return True
-        elif result[0] <= 0.4 and result[3] <= 0.90:
-            return True
+    # def check_correct(result):
+    #     if result[0] >= 0.4 and result[2] >= 0.4 and result[3] >= 0.90:
+    #         return True
+    #     elif result[0] <= 0.4 and result[3] <= 0.90:
+    #         return True
 
-        elif result[2] <= 0.4 and result[3] <= 0.90:
-            return True
-        else:
-            return False
+    #     elif result[2] <= 0.4 and result[3] <= 0.90:
+    #         return True
+    #     else:
+    #         return False
 
-    for o in outputs:
-        if check_correct(o.data):
-            num_correct += 1
-            if o.data[1] <= 0.5:
-                num_correct_with_small_b += 1
-            else:
-                num_correct_with_large_b += 1
-        else:
-            num_incorrect += 1
-            if o.data[1] <= 0.5:
-                num_incorrect_with_small_b += 1
-            else:
-                num_incorrect_with_large_b += 1  
+    # for o in outputs:
+    #     if check_correct(o.data):
+    #         num_correct += 1
+    #         if o.data[1] <= 0.5:
+    #             num_correct_with_small_b += 1
+    #         else:
+    #             num_correct_with_large_b += 1
+    #     else:
+    #         num_incorrect += 1
+    #         if o.data[1] <= 0.5:
+    #             num_incorrect_with_small_b += 1
+    #         else:
+    #             num_incorrect_with_large_b += 1  
 
-    print '-'*80
-    print outputs.data.numpy()
-    print '-'*80
-    print "Num Correct: {}".format(num_correct)
-    print "Num Incorrect: {}".format(num_incorrect)
-    print "Num Correct with Small B: {}".format(num_correct_with_small_b)
-    print "Num Correct with Large B: {}".format(num_correct_with_large_b)
-    print "Num Incorrect with Small B: {}".format(num_incorrect_with_small_b)
-    print "Num Incorrect wtih Large B: {}".format(num_incorrect_with_large_b)
-
-
-    d_plot = plt.plot(range(1, num_epochs + 1), d_losses, 'r', label="Discriminator")
-    g_plot = plt.plot(range(first_discrim_epochs + 1, num_epochs + 1), g_losses, 'b', label="Generator")
-    plt.title('Loss vs. Time')
-    plt.legend()
-    plt.show()
+    # print '-'*80
+    # print outputs.data.numpy()
+    # print '-'*80
+    # print "Num Correct: {}".format(num_correct)
+    # print "Num Incorrect: {}".format(num_incorrect)
+    # print "Num Correct with Small B: {}".format(num_correct_with_small_b)
+    # print "Num Correct with Large B: {}".format(num_correct_with_large_b)
+    # print "Num Incorrect with Small B: {}".format(num_incorrect_with_small_b)
+    # print "Num Incorrect wtih Large B: {}".format(num_incorrect_with_large_b)
 
 
-
-
+    # d_plot = plt.plot(range(1, num_epochs + 1), d_losses, 'r', label="Discriminator")
+    # g_plot = plt.plot(range(first_discrim_epochs + 1, num_epochs + 1), g_losses, 'b', label="Generator")
+    # plt.title('Loss vs. Time')
+    # plt.legend()
+    # plt.show()

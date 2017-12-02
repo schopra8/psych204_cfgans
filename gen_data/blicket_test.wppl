@@ -32,9 +32,10 @@ var genSample = function(){
 }
 
 var genSamples = function(){
-    var num_samples = 100000
-    var testData = repeat(num_samples, genSample) 
-    json.write('./data/blicket_test_40_p.json', testData)
+    var num_samples = 10000
+    var testData = repeat(num_samples, genSample)
+    var filename = './data/blicket_test_' + globalStore.d_threshold.toString() + '_p_' + num_samples.toString() + '.json' 
+    json.write(filename, testData)
 }
 
 genSamples()
