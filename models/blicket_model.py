@@ -17,7 +17,6 @@ import pickle
 import json
 import shutil
 from random import seed, shuffle
-#import matplotlib.pyplot as plt
 
 # Set random seed
 seed(3)
@@ -180,12 +179,12 @@ def train(num_epochs, num_discrim_batches_per_gen_batch, save_epochs, first_disc
                 'epoch': epoch + 1,
                 'state_dict': D.state_dict(),
                 'optimizer': d_optimizer.state_dict()
-            }, True, filename='d_{}_checkpoint.pth.tar'.format(args.data_size))
+            }, True, filename='./checkpts/d_{}_checkpoint.pth.tar'.format(args.data_size))
             save_checkpoint({
                 'epoch': epoch + 1,
                 'state_dict': G.state_dict(),
                 'optimizer': g_optimizer.state_dict()
-            }, True, filename='g_{}checkpoint.pth.tar'.format(args.data_size))
+            }, True, filename='./checkpts/g_{}checkpoint.pth.tar'.format(args.data_size))
 
     return D, G, g_input_size, d_losses, g_losses
 
@@ -265,16 +264,8 @@ if __name__ == '__main__':
     print "Num Incorrect with Small B: {}".format(num_incorrect_with_small_b)
     print "Num Incorrect wtih Large B: {}".format(num_incorrect_with_large_b)
 
-    with open('losses_{}.txt'.format(args.data_size), 'wb') as fp:
-	pickle.dump(d_losses, fp)
-	pickle.dump(g_losses, fp) 
+    with open('./losses/d_losses_{}.txt'.format(args.data_size), 'wb') as fp:
+	   pickle.dump(d_losses, fp)
+    with open('./losses/g_losses_{}.txt'.format(args.data_size), 'wb') as fp:
+	   pickle.dump(g_losses, fp)
 
-    '''
-    # Just a figure and one subplot
-    fig, ax = plt.subplots()
-    ax.plot(range(1, num_epochs + 1), d_losses, 'r', label="Discriminator")
-    ax.plot(range(first_discrim_epochs + 1, num_epochs + 1), g_losses, 'b', label="Generator")
-    plt.title('Loss vs. Time')
-    plt.legend()
-    fig.savefig('loss_plot{}'.format(args.data_size))
-    '''
