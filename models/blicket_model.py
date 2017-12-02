@@ -13,10 +13,11 @@ from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
 
 import argparse
+import pickle
 import json
 import shutil
 from random import seed, shuffle
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 # Set random seed
 seed(3)
@@ -136,10 +137,13 @@ def train(num_epochs, num_discrim_batches_per_gen_batch, save_epochs, first_disc
             gaussian_sample = Variable(sample, requires_grad=False)
             if on_gpu():
                 sample = sample.cuda()
-                gaussian_sample.cuda()
+                gaussian_sample = gaussian_sample.cuda()
             d_fake_input = G(gaussian_sample).detach()
             d_fake_preds = D(d_fake_input)
-            d_fake_error = criterion(d_fake_preds, Variable(torch.zeros(num_samples)).type(torch.LongTensor))
+            d_labels = Variable(torch.zeros(num_samples)).type(torch.LongTensor)
+            if on_gpu():
+                d_labels = d_labels.cuda()
+            d_fake_error = criterion(d_fake_preds, d_labels)
             d_fake_error.backward()
             d_errors.append(d_fake_error.data[0])
             d_errors.append(d_real_error.data[0])
@@ -153,7 +157,10 @@ def train(num_epochs, num_discrim_batches_per_gen_batch, save_epochs, first_disc
                     gaussian_sample.cuda()
                 d_fake_input = G(gaussian_sample)
                 d_fake_preds = D(d_fake_input)
-                g_error = criterion(d_fake_preds, Variable(torch.ones(num_samples).type(torch.LongTensor)))
+                labels = Variable(torch.ones(num_samples).type(torch.LongTensor))
+                if on_gpu():
+                    labels = labels.cuda()
+                g_error = criterion(d_fake_preds, labels)
                 g_error.backward()
                 g_optimizer.step() # Update Generator's parameters
                 g_errors.append(g_error.data[0])
@@ -192,7 +199,7 @@ def produce_samples(G, g_input_size):
     gaussian_sample = torch.FloatTensor(50, g_input_size)
     gaussian_sample.normal_()
     if on_gpu():
-        gaussian_sample.cuda
+        gaussian_sample =gaussian_sample.cuda()
     gaussian_sample = Variable(gaussian_sample, requires_grad=False)
     gen_outputs = G(gaussian_sample)
     return gen_outputs    
@@ -249,7 +256,7 @@ if __name__ == '__main__':
                 num_incorrect_with_large_b += 1  
 
     print '-'*80
-    print outputs.data.numpy()
+    print outputs.data.cpu().numpy()
     print '-'*80
     print "Num Correct: {}".format(num_correct)
     print "Num Incorrect: {}".format(num_incorrect)
@@ -258,7 +265,11 @@ if __name__ == '__main__':
     print "Num Incorrect with Small B: {}".format(num_incorrect_with_small_b)
     print "Num Incorrect wtih Large B: {}".format(num_incorrect_with_large_b)
 
+    with open('losses_{}.txt'.format(args.data_size), 'wb') as fp:
+	pickle.dump(d_losses, fp)
+	pickle.dump(g_losses, fp) 
 
+    '''
     # Just a figure and one subplot
     fig, ax = plt.subplots()
     ax.plot(range(1, num_epochs + 1), d_losses, 'r', label="Discriminator")
@@ -266,3 +277,4 @@ if __name__ == '__main__':
     plt.title('Loss vs. Time')
     plt.legend()
     fig.savefig('loss_plot{}'.format(args.data_size))
+    '''
