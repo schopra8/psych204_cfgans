@@ -51,9 +51,6 @@ class Generator(nn.Module):
         layer2_output = self.layer2_leaky_relu(self.layer2(layer1_output))
         return F.sigmoid(self.layer3(layer2_output))
 
-    def on_gpu(self):
-        return next(self.parameters()).is_cuda
-
 class Discriminator(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(Discriminator, self).__init__()
@@ -68,31 +65,34 @@ class Discriminator(nn.Module):
         layer2_output = self.layer2_leaky_relu(self.layer2(layer1_output))
         return self.layer3(layer2_output)
 
-    def on_gpu(self):
-        return next(self.parameters()).is_cuda
-
 def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
     torch.save(state, filename)
 
 
+def on_gpu():
+    return torch.cuda.is_available()
+
 def train(num_epochs, num_discrim_batches_per_gen_batch, save_epochs, first_discrim_epochs, data):
+    # On GPU?
+    print '-'*80
+    print "On GPU?: {}".format(on_gpu())
+    print '-'*80
+
     # Generator parameters
     g_input_size = 5
     g_hidden_size = 10
     g_output_size = 4
     G = Generator(input_size=g_input_size, hidden_size=g_hidden_size, output_size=g_output_size)
+    if on_gpu():
+        G = G.cuda()
 
     # Discriminator parameters
     d_input_size = 4
     d_hidden_size = 6
     d_output_size = 2
     D = Discriminator(input_size=d_input_size, hidden_size=d_hidden_size, output_size=d_output_size)
-
-    # On GPU?
-    print '-'*80
-    print "Discriminator on GPU?: {}".format(D.on_gpu())
-    print "Generator on GPU?: {}".format(G.on_gpu())
-    print '-'*80
+    if on_gpu():
+        D = D.cuda()
 
     # Optimizers
     criterion = nn.CrossEntropyLoss()
@@ -116,7 +116,7 @@ def train(num_epochs, num_discrim_batches_per_gen_batch, save_epochs, first_disc
 
         for i, minibatch in enumerate(data):
             minibatch = Variable(minibatch, requires_grad=False)
-            if D.on_gpu():
+            if on_gpu():
                 minibatch = minibatch.cuda()
 
             num_samples = minibatch.size()[0]
@@ -125,7 +125,7 @@ def train(num_epochs, num_discrim_batches_per_gen_batch, save_epochs, first_disc
             D.zero_grad()
             d_real_preds = D(minibatch)
             labels = Variable(torch.ones(num_samples)).type(torch.LongTensor)
-            if D.on_gpu():
+            if on_gpu():
                 labels = labels.cuda()
             d_real_error = criterion(d_real_preds, labels)
             d_real_error.backward()
@@ -134,7 +134,7 @@ def train(num_epochs, num_discrim_batches_per_gen_batch, save_epochs, first_disc
             sample = torch.FloatTensor(num_samples, g_input_size)
             sample.normal_()
             gaussian_sample = Variable(sample, requires_grad=False)
-            if D.on_gpu():
+            if on_gpu():
                 sample = sample.cuda()
                 gaussian_sample.cuda()
             d_fake_input = G(gaussian_sample).detach()
@@ -149,7 +149,7 @@ def train(num_epochs, num_discrim_batches_per_gen_batch, save_epochs, first_disc
             if epoch >= first_discrim_epochs:
                 G.zero_grad()
                 gaussian_sample = Variable(sample, requires_grad=False)
-                if G.on_gpu():
+                if on_gpu():
                     gaussian_sample.cuda()
                 d_fake_input = G(gaussian_sample)
                 d_fake_preds = D(d_fake_input)
@@ -191,7 +191,7 @@ def adjust_learning_rate(optimizer, epoch, lr):
 def produce_samples(G, g_input_size):
     gaussian_sample = torch.FloatTensor(50, g_input_size)
     gaussian_sample.normal_()
-    if G.on_gpu():
+    if on_gpu():
         gaussian_sample.cuda
     gaussian_sample = Variable(gaussian_sample, requires_grad=False)
     gen_outputs = G(gaussian_sample)
