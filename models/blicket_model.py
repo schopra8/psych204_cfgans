@@ -256,12 +256,14 @@ if __name__ == '__main__':
     stats = {'Correct_A_C_D': 0, 'Correct_CF': 0, 'Incorrect_A_C_D': 0, 'Incorrect_CF': 0}
     for o in outputs:
         if check_correct(o.data, float(args.cut_off), stats):
+            print "Correct"
             num_correct += 1
             if o.data[1] <= 0.5:
                 num_correct_with_small_b += 1
             else:
                 num_correct_with_large_b += 1
         else:
+            print "Incorrect"
             num_incorrect += 1
             if o.data[1] <= 0.5:
                 num_incorrect_with_small_b += 1
