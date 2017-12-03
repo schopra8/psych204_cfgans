@@ -211,6 +211,10 @@ if __name__ == '__main__':
     parser.add_argument('--cut_off', help='cut off', default=0.4)
     args = parser.parse_args()
 
+    print '-'*80
+    print 'Cutoff: {}'.format(args.cut_off)
+    print '-'*80
+
     blicket_data = parse_blicket_data(args.file)
     # num_epochs = 100
     num_epochs = 25
@@ -230,7 +234,7 @@ if __name__ == '__main__':
     num_correct_with_small_b = 0
     num_incorrect_with_small_b = 0
     num_incorrect_with_large_b = 0
-
+ 
     def check_correct(result, cut_off, stats):
         if result[0] >= cut_off and result[2] >= cut_off and result[3] >= 0.90:
             stats['Correct_A_C_D'] += 1
@@ -245,13 +249,13 @@ if __name__ == '__main__':
             if result[0] >= cut_off and result[2] >= cut_off and result[3] <= 0.90:
                 stats['Incorrect_A_C_D'] += 1
                 return False
-            else
+            else:
                 stats['Incorrect_CF'] += 1
                 return False
 
     stats = {'Correct_A_C_D': 0, 'Correct_CF': 0, 'Incorrect_A_C_D': 0, 'Incorrect_CF': 0}
     for o in outputs:
-        if check_correct(o.data, stats):
+        if check_correct(o.data, float(args.cut_off), stats):
             num_correct += 1
             if o.data[1] <= 0.5:
                 num_correct_with_small_b += 1
