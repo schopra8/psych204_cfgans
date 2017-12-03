@@ -81,7 +81,7 @@ def train(num_epochs, num_discrim_batches_per_gen_batch, save_epochs, first_disc
 
     # Generator parameters
     g_input_size = 5
-    g_hidden_size = 8
+    g_hidden_size = 10
     g_output_size = 4
     G = Generator(input_size=g_input_size, hidden_size=g_hidden_size, output_size=g_output_size)
     if on_gpu():
@@ -89,7 +89,7 @@ def train(num_epochs, num_discrim_batches_per_gen_batch, save_epochs, first_disc
 
     # Discriminator parameters
     d_input_size = 4
-    d_hidden_size = 6
+    d_hidden_size = 10
     d_output_size = 2
     D = Discriminator(input_size=d_input_size, hidden_size=d_hidden_size, output_size=d_output_size)
     if on_gpu():
@@ -216,8 +216,7 @@ if __name__ == '__main__':
     print '-'*80
 
     blicket_data = parse_blicket_data(args.file)
-    # num_epochs = 100
-    num_epochs = 25
+    num_epochs = 100
     first_discrim_epochs = 0
     num_discrim_batches_per_gen_batch = 2
     D, G, g_input_size, d_losses, g_losses = train(
