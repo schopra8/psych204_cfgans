@@ -16,7 +16,7 @@
 // Note: run with "--require webppl-json"
 // ------------------------------------------------------------------------------------------------
 
-globalStore.d_threshold = 0.01
+globalStore.d_threshold = 0.3
 
 var genSample = function(){
     var A = sample(Uniform({a:0, b:1}))
@@ -105,7 +105,7 @@ var computeSummaryStats = function(num_samples, samples) {
 }
 
 var genSamples = function(){
-    var num_samples = 10000
+    var num_samples = 1000000
     var testData = repeat(num_samples, genSample)
     var filename = './data/blicket_test_' + globalStore.d_threshold.toString() + '_p_' + num_samples.toString() + '.json' 
     json.write(filename, testData)
