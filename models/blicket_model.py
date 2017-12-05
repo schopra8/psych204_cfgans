@@ -32,7 +32,7 @@ def parse_blicket_data(fn):
         tensor_data = torch.FloatTensor(vectorized_data)
         blicket_data = torch.utils.data.DataLoader(
             tensor_data,
-            batch_size=100,
+            batch_size=10000,
             shuffle=True,
             num_workers=4
         )
