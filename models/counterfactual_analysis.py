@@ -64,6 +64,7 @@ def analysis(G, Z, samples):
         valid_sample, state = check_correct(s.data, 0.3)
         if valid_sample and state == 'D_ON_A_ON_C_ON':
             for (var, cond) in state_to_unary_conditions[state]:
+                print "Testing Condition:"
                 percent_valid = conditionally_counterfactualize(G, Z[i, :], state, var, cond, perturbation=perturbation_one)
                 state_to_unary_conditions[(var, cond)] = percent_valid
             break
