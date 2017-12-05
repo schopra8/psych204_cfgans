@@ -34,23 +34,40 @@ def prior():
     return np.random.normal()
 
 def analysis(G, Z, samples):
+    state_to_unary_conditions = {
+        'D_ON_A_ON_C_ON': [(0, 0), (2, 0)], # Tuple (variable, condition)
+        'D_OFF_A_OFF_C_OFF': [(0, 1), (2, 1)],
+        'D_OFF_A_OFF_C_ON': [(0, 1), (2, 0)],
+        'D_OFF_A_ON_C_OFF': [(0, 0), (2, 1)],
+    }
+
+    state_unary_condition_stats = {
+        'D_ON_A_ON_C_ON': {
+            (0, 0): 0,
+            (2, 0): 0,
+        }, 
+        'D_OFF_A_OFF_C_OFF': {
+            (0, 1): 0,
+            (2, 1): 0,
+        },
+        'D_OFF_A_OFF_C_ON': {
+            (0, 1): 0,
+            (2, 0): 0,
+        },
+        'D_OFF_A_ON_C_OFF': {
+            (0, 0): 0,
+            (2, 1): 0,
+        },
+    }
+
     for i, s in enumerate(samples):
-        print '-' * 80
         valid_sample, state = check_correct(s.data, 0.3)
         if valid_sample and state == 'D_ON_A_ON_C_ON':
-            print conditionally_counterfactualize(G, Z[i, :], state, var=0, cond=0, perturbation=perturbation_one)
-            '''
-            print 'state: {}'.format(state)
-            print 'original z_i: {}'.format(Z[i, :])
-            z_i_prime = perturbation_one(Z[i, :])
-            print 'new z_i: {}'.format(z_i_prime)
-            new_output = G(z_i_prime)
-            print 'new: {}'.format(new_output)
-            valid, new_state = check_correct(new_output.data, 0.3)
-            print 'new state: {}'.format(new_state)
-            print '-' * 80
-            '''
-            
+            for (var, cond) in state_to_unary_conditions[state]:
+                percent_valid = conditionally_counterfactualize(G, Z[i, :], state, var, cond, perturbation=perturbation_one)
+                state_to_unary_conditions[(var, cond) = percent_valid]
+            break
+        print state_unary_condition_stats
 
 def conditionally_counterfactualize(G, z_i, orig_state, var, cond, perturbation, num_observed=50):
     curr_observed = 0
@@ -59,20 +76,17 @@ def conditionally_counterfactualize(G, z_i, orig_state, var, cond, perturbation,
         z_i_prime = perturbation(z_i)
         new_output = G(z_i_prime)
         valid, new_state = check_correct(new_output.data, 0.3)
-        if not valid:
-            continue
-        print new_output
-        print new_state
         if (new_output.data[var] >= 0.3) == cond:
             curr_observed += 1
+
+            print new_output
+            print new_state
+            if new_state is None:
+                continue
+
             causal_link_retained += 1
-            if new_state == 'D_OFF_A_OFF_C_ON' or new_state == 'D_OFF_A_OFF_C_OFF':
-                print "Observed Desired State"
-                print "Output: {}".format(new_output)
-            else:
-                print "Failed to observe desired state"
-                print "Output: {}".format(new_output)
-    return causal_link_retained
+
+    return (causal_link_retained * 1.0) / num_observed * 100
 
 def perturbation_one(z, s=0.5):
     z_i = z.clone()
