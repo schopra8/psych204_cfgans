@@ -92,19 +92,22 @@ def conditionally_counterfactualize(G, z_i, orig_state, var, cond, perturbation,
 def perturbation_one(z, s=0.5):
     z_i = z.clone()
     for j in range(z.size()[0]):
-        if not flip(s):
+        if not flip(0.5):
             z_i[j] = prior()
     return z_i
 
-def perturbation_two():
+def perturbation_two(z, s=0.5):
     z_i = z.clone()
-    # z_i = normal
-    # z_i' = N(z_i, sigma)
-    pass
+    for j in range(z.size()[0]):
+        z_i[j] = np.random.normal(z.data[j])
+    return z_i
 
-def perturbation_three():
-    # z_i' = flip(s) ? z_i : N(z_i, sigma)
-    pass
+def perturbation_three(z, s):
+    z_i = z.clone()
+    for j in range(z.size()[0]):
+        if not flip(s):
+            z_i[j] = np.random.normal(z.data[j])
+    return z_i
 
 if __name__ == '__main__':
     # Generator Definiton
