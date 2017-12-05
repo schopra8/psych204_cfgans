@@ -22,7 +22,7 @@ if __name__ == '__main__':
         G = G.cuda()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', help='Path to Generator Model Weights')
+    parser.add_argument('--model', help='Path to Generator Model Weights', default='./checkpts/g_1000000_0.3_checkpoint.pth.tar')
     args = parser.parse_args()
 
     if args.model:
