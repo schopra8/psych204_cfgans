@@ -10,7 +10,7 @@
 import argparse
 import os
 import torch
-from models.blicket_model import Generator, on_gpu
+from blicket_model import Generator, on_gpu, produce_samples
 
 if __name__ == '__main__':
     # Generator Definiton
@@ -32,8 +32,10 @@ if __name__ == '__main__':
             G.load_state_dict(checkpoint['state_dict'])
             print("=> successfully loaded checkpoint")
         else:
-            print("=> no checkpoint found at '{}'".format(args.resume))
+            print("=> no checkpoint found at '{}'".format(args.model))
 
+    samples = produce_samples(G, g_input_size)
+    print samples
 
 
 def perturbation_one():

@@ -180,12 +180,12 @@ def train(num_epochs, num_discrim_batches_per_gen_batch, save_epochs, first_disc
                 'epoch': epoch + 1,
                 'state_dict': D.state_dict(),
                 'optimizer': d_optimizer.state_dict()
-            }, True, filename='./checkpts/d_{}_checkpoint.pth.tar'.format(args.data_size))
+            }, True, filename='./checkpts/d_{}_{}_checkpoint.pth.tar'.format(args.data_size, args.cut_off))
             save_checkpoint({
                 'epoch': epoch + 1,
                 'state_dict': G.state_dict(),
                 'optimizer': g_optimizer.state_dict()
-            }, True, filename='./checkpts/g_{}checkpoint.pth.tar'.format(args.data_size))
+            }, True, filename='./checkpts/g_{}_{}_checkpoint.pth.tar'.format(args.data_size, args.cut_off))
 
     return D, G, g_input_size, d_losses, g_losses
 
