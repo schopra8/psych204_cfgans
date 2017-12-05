@@ -10,8 +10,17 @@
 import argparse
 import os
 import torch
+from models.blicket_model import Generator, on_gpu
 
 if __name__ == '__main__':
+    # Generator Definiton
+    g_input_size = 5
+    g_hidden_size = 10
+    g_output_size = 4
+    G = Generator(input_size=g_input_size, hidden_size=g_hidden_size, output_size=g_output_size)
+    if on_gpu():
+        G = G.cuda()
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', help='Path to Generator Model Weights')
     args = parser.parse_args()
@@ -20,7 +29,8 @@ if __name__ == '__main__':
         if os.path.isfile(args.model):
             print("=> loading checkpoint '{}'".format(args.model))
             checkpoint = torch.load(args.model)
-            model.load_state_dict(checkpoint['state_dict'])
+            G.load_state_dict(checkpoint['state_dict'])
+            print("=> successfully loaded checkpoint")
         else:
             print("=> no checkpoint found at '{}'".format(args.resume))
 
