@@ -60,11 +60,12 @@ class Discriminator(nn.Module):
         self.layer2 = nn.Linear(hidden_size, hidden_size)
         self.layer2_leaky_relu = nn.LeakyReLU()
         self.layer3 = nn.Linear(hidden_size, output_size)
+        self.layer3_softmax = nn.Softmax()
 
     def forward(self, x):
         layer1_output = self.layer1_leaky_relu(self.layer1(x))
         layer2_output = self.layer2_leaky_relu(self.layer2(layer1_output))
-        return self.layer3(layer2_output)
+        return self.layer3_softmax(self.layer3(layer2_output))
 
 def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
     torch.save(state, filename)
@@ -209,6 +210,7 @@ if __name__ == '__main__':
     parser.add_argument('--file', help='blicket data file path', default='../gen_data/data/blicket_test_0.4_p_100000.json' )
     parser.add_argument('--data_size', help='num training samples', default=100000)
     parser.add_argument('--cut_off', help='cut off', default=0.4)
+    parser.add_argument('--epochs', default=100)
     args = parser.parse_args()
 
     print '-'*80
@@ -216,7 +218,7 @@ if __name__ == '__main__':
     print '-'*80
 
     blicket_data = parse_blicket_data(args.file)
-    num_epochs = 100
+    num_epochs = int(args.epochs)
     first_discrim_epochs = 0
     num_discrim_batches_per_gen_batch = 2
     D, G, g_input_size, d_losses, g_losses = train(
