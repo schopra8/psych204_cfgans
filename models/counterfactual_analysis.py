@@ -84,11 +84,8 @@ def conditionally_counterfactualize(G, z_i, orig_state, var, cond, perturbation,
             print new_state
             if new_state is None:
                 continue
-
-         causal_link_retained += 1
-         if curr_observed == num_observed:
-             break
-
+            else:
+                causal_link_retained += 1
     return (causal_link_retained * 1.0) / num_observed * 100
 
 def perturbation_one(z, s=0.5):
