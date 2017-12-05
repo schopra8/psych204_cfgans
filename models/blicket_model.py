@@ -203,7 +203,7 @@ def produce_samples(G, g_input_size):
         gaussian_sample =gaussian_sample.cuda()
     gaussian_sample = Variable(gaussian_sample, requires_grad=False)
     gen_outputs = G(gaussian_sample)
-    return gen_outputs    
+    return gen_outputs, gaussian_sample
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -228,7 +228,7 @@ if __name__ == '__main__':
         save_epochs=10,
         data=blicket_data)
     
-    outputs = produce_samples(G, g_input_size)
+    outputs, _ = produce_samples(G, g_input_size)
     num_correct = 0
     num_incorrect = 0
     num_correct_with_large_b = 0

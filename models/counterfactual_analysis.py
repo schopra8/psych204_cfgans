@@ -11,8 +11,85 @@ import argparse
 import os
 import torch
 import random
-import numpy.random.normal as normal
+import numpy as np
 from blicket_model import Generator, on_gpu, produce_samples
+
+def check_correct(result, cut_off):
+    if result[0] >= cut_off and result[2] >= cut_off and result[3] >= 0.90:
+        return True, 'D_ON_A_ON_C_ON'
+    elif result[0] <= cut_off and result[3] < 0.90:
+        if result[2] <= cut_off:
+            return True, 'D_OFF_A_OFF_C_OFF'
+        else:
+            return True, 'D_OFF_A_OFF_C_ON'
+    elif result[2] <= cut_off and result[3] < 0.90:
+        return True, 'D_OFF_A_ON_C_OFF'
+    else:
+        return False, None
+
+def flip(s):
+    return random.uniform(0, 1) >= s
+
+def prior():
+    return np.random.normal()
+
+def analysis(G, Z, samples):
+    for i, s in enumerate(samples):
+        print '-' * 80
+        valid_sample, state = check_correct(s.data, 0.3)
+        if valid_sample and state == 'D_ON_A_ON_C_ON':
+            print conditionally_counterfactualize(G, Z[i, :], state, var=0, cond=0, perturbation=perturbation_one)
+            '''
+            print 'state: {}'.format(state)
+            print 'original z_i: {}'.format(Z[i, :])
+            z_i_prime = perturbation_one(Z[i, :])
+            print 'new z_i: {}'.format(z_i_prime)
+            new_output = G(z_i_prime)
+            print 'new: {}'.format(new_output)
+            valid, new_state = check_correct(new_output.data, 0.3)
+            print 'new state: {}'.format(new_state)
+            print '-' * 80
+            '''
+            
+
+def conditionally_counterfactualize(G, z_i, orig_state, var, cond, perturbation, num_observed=50):
+    curr_observed = 0
+    causal_link_retained = 0
+    while curr_observed < num_observed:
+        z_i_prime = perturbation(z_i)
+        new_output = G(z_i_prime)
+        valid, new_state = check_correct(new_output.data, 0.3)
+        if not valid:
+            continue
+        print new_output
+        print new_state
+        if (new_output.data[var] >= 0.3) == cond:
+            curr_observed += 1
+            causal_link_retained += 1
+            if new_state == 'D_OFF_A_OFF_C_ON' or new_state == 'D_OFF_A_OFF_C_OFF':
+                print "Observed Desired State"
+                print "Output: {}".format(new_output)
+            else:
+                print "Failed to observe desired state"
+                print "Output: {}".format(new_output)
+    return causal_link_retained
+
+def perturbation_one(z, s=0.5):
+    z_i = z.clone()
+    for j in range(z.size()[0]):
+        if not flip(s):
+            z_i[j] = prior()
+    return z_i
+
+def perturbation_two():
+    z_i = z.clone()
+    # z_i = normal
+    # z_i' = N(z_i, sigma)
+    pass
+
+def perturbation_three():
+    # z_i' = flip(s) ? z_i : N(z_i, sigma)
+    pass
 
 if __name__ == '__main__':
     # Generator Definiton
@@ -36,52 +113,6 @@ if __name__ == '__main__':
         else:
             print("=> no checkpoint found at '{}'".format(args.model))
 
-    samples = produce_samples(G, g_input_size)
-    counterfactualize(G, z, samples)
+    samples, Z = produce_samples(G, g_input_size)
+    analysis(G, Z, samples)
 
-def check_correct(result, cut_off, stats):
-    if result[0] >= cut_off and result[2] >= cut_off and result[3] >= 0.90:
-        return True, 'D_ON'
-    elif result[0] <= cut_off and result[3] < 0.90:
-        if result[2] <= cut_off:
-            return True, 'D_OFF_A_OFF_C_OFF'
-        else:
-            return True, 'D_OFF_A_OFF_C_ON'
-    elif result[2] <= cut_off and result[3] < 0.90:
-        return True, 'D_OFF_A_ON_C_OFF'
-    else:
-        return False, None
-
-def flip(s):
-    return random.uniform(0, 1) >= s
-
-def prior():
-    return normal()
-
-def counterfactualize(G, Z, samples):
-    for s in samples:
-        valid_sample, state = check_correct(s)
-        if valid_sample:
-            print 'state: {}'.format(state)
-            print 'original: {}'.format(Z[i, :])
-            print perturbation_one(Z[i, :])
-            break
-    pass
-
-
-def perturbation_one(z, s=0.5):
-    z_i = z.clone()
-    for j in z.size()[1]
-        if not flip(s):
-            z_i[j] = normal()
-    return z_i
-
-def perturbation_two():
-    z_i = z.clone()
-    # z_i = normal
-    # z_i' = N(z_i, sigma)
-    pass
-
-def perturbation_three():
-    # z_i' = flip(s) ? z_i : N(z_i, sigma)
-    pass
