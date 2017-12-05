@@ -15,13 +15,12 @@ import numpy as np
 from blicket_model import Generator, on_gpu, produce_samples
 
 def check_correct(result, cut_off):
-    if result[0] >= cut_off and result[2] >= cut_off and result[3] >= 0.90:
+    if result[0] <= cut_off and result[2] <= cut_off and result[3] < 0.90:
+        return True, 'D_OFF_A_OFF_C_OFF'
+    elif result[0] >= cut_off and result[2] >= cut_off and result[3] >= 0.90:
         return True, 'D_ON_A_ON_C_ON'
     elif result[0] <= cut_off and result[3] < 0.90:
-        if result[2] <= cut_off:
-            return True, 'D_OFF_A_OFF_C_OFF'
-        else:
-            return True, 'D_OFF_A_OFF_C_ON'
+        return True, 'D_OFF_A_OFF_C_ON'
     elif result[2] <= cut_off and result[3] < 0.90:
         return True, 'D_OFF_A_ON_C_OFF'
     else:
@@ -62,11 +61,12 @@ def analysis(G, Z, samples):
 
     for i, s in enumerate(samples):
         valid_sample, state = check_correct(s.data, 0.3)
-        if valid_sample and state == 'D_ON_A_ON_C_ON':
+        if valid_sample and state == 'D_OFF_A_ON_C_OFF':
             for (var, cond) in state_to_unary_conditions[state]:
                 print "Testing Condition:"
-                percent_valid = conditionally_counterfactualize(G, Z[i, :], state, var, cond, perturbation=perturbation_one)
-                state_to_unary_conditions[(var, cond)] = percent_valid
+                percent_valid = conditionally_counterfactualize(G, Z[i, :], state, var, cond, perturbation=perturbation_one, num_observed=1000)
+                state_unary_condition_stats['D_OFF_A_ON_C_OFF'][(var, cond)] = percent_valid
+                print state_unary_condition_stats
             break
     print state_to_unary_conditions
 
@@ -128,6 +128,6 @@ if __name__ == '__main__':
         else:
             print("=> no checkpoint found at '{}'".format(args.model))
 
-    samples, Z = produce_samples(G, g_input_size)
+    samples, Z = produce_samples(G, g_input_size, 1000)
     analysis(G, Z, samples)
 

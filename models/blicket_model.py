@@ -196,8 +196,8 @@ def adjust_learning_rate(optimizer, epoch, lr):
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
-def produce_samples(G, g_input_size):
-    gaussian_sample = torch.FloatTensor(50, g_input_size)
+def produce_samples(G, g_input_size, num_samples=50):
+    gaussian_sample = torch.FloatTensor(num_samples, g_input_size)
     gaussian_sample.normal_()
     if on_gpu():
         gaussian_sample =gaussian_sample.cuda()
