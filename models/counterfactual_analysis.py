@@ -65,9 +65,9 @@ def analysis(G, Z, samples):
         if valid_sample and state == 'D_ON_A_ON_C_ON':
             for (var, cond) in state_to_unary_conditions[state]:
                 percent_valid = conditionally_counterfactualize(G, Z[i, :], state, var, cond, perturbation=perturbation_one)
-                state_to_unary_conditions[(var, cond) = percent_valid]
+                state_to_unary_conditions[(var, cond)] = percent_valid
             break
-        print state_unary_condition_stats
+    print state_to_unary_conditions
 
 def conditionally_counterfactualize(G, z_i, orig_state, var, cond, perturbation, num_observed=50):
     curr_observed = 0
@@ -78,13 +78,16 @@ def conditionally_counterfactualize(G, z_i, orig_state, var, cond, perturbation,
         valid, new_state = check_correct(new_output.data, 0.3)
         if (new_output.data[var] >= 0.3) == cond:
             curr_observed += 1
-
+            
+            print "Curr Observed: {}".format(curr_observed)
             print new_output
             print new_state
             if new_state is None:
                 continue
 
-            causal_link_retained += 1
+         causal_link_retained += 1
+         if curr_observed == num_observed:
+             break
 
     return (causal_link_retained * 1.0) / num_observed * 100
 
